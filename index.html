@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>مشاركة الشاشة</title>
+  <title>بث الكاميرا المباشر</title>
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <style>
     body { font-family: sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9; }
@@ -15,21 +15,21 @@
 </head>
 <body>
 
-  <h2>تطبيق مشاركة الشاشة</h2>
+  <h2>تطبيق البث المباشر (الكاميرا)</h2>
 
-  <!-- قسم الجوال الأول (المُرسِل) -->
+  <!-- الجوال الأول (المُرسِل) -->
   <div class="card">
-    <h3>الجوال الأول (مشاركة الشاشة)</h3>
-    <button onclick="startSharing()">بدء مشاركة الشاشة</button>
-    <p>معرّف جهازك (أرسله للجوال الثاني): <br><b id="my-id" style="color: #007bff; font-size: 18px;">جاري الاتصال...</b></p>
+    <h3>الجوال الأول (بدء البث)</h3>
+    <button onclick="startSharing()">تشغيل الكاميرا والبث</button>
+    <p>معرّف جهازك: <br><b id="my-id" style="color: #007bff; font-size: 18px;">جاري الاتصال...</b></p>
   </div>
 
-  <!-- قسم الجوال الثاني (المستقبل) -->
+  <!-- الجوال الثاني (المستقبل) -->
   <div class="card">
-    <h3>الجوال الثاني (عرض الشاشة)</h3>
-    <input type="text" id="remote-id" placeholder="أدخل معرّف الجوال الأول هنا">
+    <h3>الجوال الثاني (عرض البث)</h3>
+    <input type="text" id="remote-id" placeholder="أدخل معرّف الجوال الأول">
     <br>
-    <button onclick="connectToPeer()">عرض الشاشة</button>
+    <button onclick="connectToPeer()">عرض البث</button>
   </div>
 
   <video id="remote-video" autoplay playsinline controls></video>
@@ -43,13 +43,18 @@
 
     async function startSharing() {
       try {
-        const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+        // طلب إذن الوصول إلى الكاميرا والميكروفون
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        
+        // عرض البث المباشر محلّياً على الجوال الأول أيضاً
+        document.getElementById('remote-video').srcObject = stream;
+
         peer.on('call', (call) => {
           call.answer(stream);
         });
-        alert("تم بدء المشاركة! أدخل المعرف الظاهر أعلاه في الجوال الثاني.");
+        alert("تم تشغيل الكاميرا! أدخل المعرف في الجوال الثاني لعرض البث.");
       } catch (err) {
-        alert("حدث خطأ أو تعذر الحصول على إذن المشاركة: " + err.message);
+        alert("تعذر الوصول إلى الكاميرا: " + err.message);
       }
     }
 
