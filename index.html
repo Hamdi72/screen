@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مشاركة الشاشة</title>
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9; }
+    .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    button { padding: 10px 20px; font-size: 16px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    input { padding: 10px; font-size: 16px; width: 80%; max-width: 300px; margin-bottom: 10px; }
+    video { width: 100%; max-width: 500px; border-radius: 10px; background: #000; margin-top: 15px; }
+  </style>
+</head>
+<body>
+
+  <h2>تطبيق مشاركة الشاشة</h2>
+
+  <!-- قسم الجوال الأول (المُرسِل) -->
+  <div class="card">
+    <h3>الجوال الأول (مشاركة الشاشة)</h3>
+    <button onclick="startSharing()">بدء مشاركة الشاشة</button>
+    <p>معرّف جهازك (أرسله للجوال الثاني): <br><b id="my-id" style="color: #007bff; font-size: 18px;">جاري الاتصال...</b></p>
+  </div>
+
+  <!-- قسم الجوال الثاني (المستقبل) -->
+  <div class="card">
+    <h3>الجوال الثاني (عرض الشاشة)</h3>
+    <input type="text" id="remote-id" placeholder="أدخل معرّف الجوال الأول هنا">
+    <br>
+    <button onclick="connectToPeer()">عرض الشاشة</button>
+  </div>
+
+  <video id="remote-video" autoplay playsinline controls></video>
+
+  <script>
+    const peer = new Peer();
+
+    peer.on('open', (id) => {
+      document.getElementById('my-id').innerText = id;
+    });
+
+    async function startSharing() {
+      try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+        peer.on('call', (call) => {
+          call.answer(stream);
+        });
+        alert("تم بدء المشاركة! أدخل المعرف الظاهر أعلاه في الجوال الثاني.");
+      } catch (err) {
+        alert("حدث خطأ أو تعذر الحصول على إذن المشاركة: " + err.message);
+      }
+    }
+
+    function connectToPeer() {
+      const remoteId = document.getElementById('remote-id').value.trim();
+      if (!remoteId) {
+        alert("من فضلك أدخل معرّف الجوال الأول أولاً");
+        return;
+      }
+      const call = peer.call(remoteId, null);
+      call.on('stream', (remoteStream) => {
+        const videoElement = document.getElementById('remote-video');
+        videoElement.srcObject = remoteStream;
+      });
+    }
+  </script>
+
+</body>
+</html>
